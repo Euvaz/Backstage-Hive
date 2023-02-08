@@ -37,8 +37,8 @@ func registerRoutes (router *gin.Engine, db *sql.DB) {
         }
 
         if enrollmentKeyIsValid(db, token.Key) {
-            _, err := db.Exec(`INSERT INTO drones (id, address, port, name)
-                               VALUES (DEFAULT, $1, $2, $3)`, token.Addr, token.Port, name)
+            _, err := db.Exec(`INSERT INTO drones (id, address, port, name, hostname)
+                               VALUES (DEFAULT, $1, $2, $3, $4)`, token.Addr, token.Port, name, token.Host)
             if err != nil {
                 logger.Error(err.Error())
                 ctx.AbortWithStatus(500)

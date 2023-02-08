@@ -6,6 +6,9 @@ import (
     "encoding/base64"
     "encoding/json"
     "fmt"
+    "net"
+    "net/netip"
+    "strings"
 
     "github.com/Euvaz/Backstage-Hive/logger"
     "github.com/Euvaz/Backstage-Hive/models"
@@ -67,7 +70,8 @@ func main() {
         Run: func(cmd *cobra.Command, args []string) {
             logger.Debug("Creating token...")
             key  := RandStringBytes(50)
-            tokenBytes, err := json.Marshal(models.Token{Addr: viper.GetString("host"), Port: viper.GetInt("port"), Key: key})
+            address, hostname := parseHost(viper.GetString("host"))
+            tokenBytes, err := json.Marshal(models.Token{Addr: address, Port: viper.GetInt("port"), Host: hostname, Key: key})
             enrollmentToken := base64.StdEncoding.EncodeToString(tokenBytes)
 
             _, err = db.Exec(`INSERT INTO tokens (id, key, created)
@@ -94,24 +98,25 @@ func main() {
         Long:  `Long Desc`,
         Aliases: []string{"dr", "drones"},
         Run: func(cmd *cobra.Command, args []string) {
-            rows, err := db.Query(`SELECT address, port, name FROM drones`)
+            rows, err := db.Query(`SELECT address, port, name, hostname FROM drones`)
             if err != nil {
                 logger.Fatal(err.Error())
             }
             defer rows.Close()
 
-            f := "%-15s %-6s %s\n"
-            fmt.Printf(f, "ADDRESS", "PORT", "NAME")
+            f := "%-15s %-6s %-13s, %s\n"
+            fmt.Printf(f, "ADDRESS", "PORT", "NAME", "HOSTNAME")
 
             var address string
             var port string
             var name string
+            var hostname string
 
             for rows.Next() {
-                if err := rows.Scan(&address, &port, &name); err != nil {
+                if err := rows.Scan(&address, &port, &name, &hostname); err != nil {
                     logger.Fatal(err.Error())
                 }
-                fmt.Printf(f, address, port, name)
+                fmt.Printf(f, address, port, name, hostname)
             }
             if err = rows.Err(); err != nil {
                 logger.Fatal(err.Error())
@@ -184,8 +189,10 @@ func initDB(db *sql.DB) {
                         address INET,
                         port INTEGER,
                         name TEXT,
+                        hostname TEXT,
                         UNIQUE (address, port),
-                        UNIQUE (name)
+                        UNIQUE (name),
+                        UNIQUE (hostname)
                       )`)
 	if err != nil {
 		logger.Fatal(err.Error())
@@ -290,4 +297,26 @@ func enrollmentKeyIsValid(db *sql.DB, key string) bool {
     default:
         return false
     }
+}
+
+func parseHost(host string) (string, string) {
+    // Check if host is an IP address
+    address, err := netip.ParseAddr(host)
+    if err != nil {
+        // Attempt to resolve
+        addressSlice, err := net.LookupIP(host)
+        if err != nil {
+            logger.Fatal(err.Error())
+        }
+        // Convert []net.IP to String
+        addresses := fmt.Sprintf("%s", addressSlice)
+        addressArray := strings.Fields(addresses[1:len(addresses)-1])
+        // Ensure only a single IP was resolved
+        if len(addressArray) > 1 {
+            logger.Warn("More than one IP resolved; Defaulting to first address")
+        }
+        return addressArray[0], host
+    }
+    hostname := ""
+    return address.String(), hostname
 }
