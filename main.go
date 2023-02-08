@@ -6,12 +6,10 @@ import (
     "encoding/base64"
     "encoding/json"
     "fmt"
-    "net"
-    "net/netip"
-    "strings"
 
     "github.com/Euvaz/Backstage-Hive/logger"
     "github.com/Euvaz/Backstage-Hive/models"
+    "github.com/Euvaz/Backstage-Hive/pkg"
     "github.com/gin-gonic/gin"
     _ "github.com/jackc/pgx/v5/stdlib"
     "github.com/spf13/cobra"
@@ -297,26 +295,4 @@ func enrollmentKeyIsValid(db *sql.DB, key string) bool {
     default:
         return false
     }
-}
-
-func parseHost(host string) (string, string) {
-    // Check if host is an IP address
-    address, err := netip.ParseAddr(host)
-    if err != nil {
-        // Attempt to resolve
-        addressSlice, err := net.LookupIP(host)
-        if err != nil {
-            logger.Fatal(err.Error())
-        }
-        // Convert []net.IP to String
-        addresses := fmt.Sprintf("%s", addressSlice)
-        addressArray := strings.Fields(addresses[1:len(addresses)-1])
-        // Ensure only a single IP was resolved
-        if len(addressArray) > 1 {
-            logger.Warn("More than one IP resolved; Defaulting to first address")
-        }
-        return addressArray[0], host
-    }
-    hostname := ""
-    return address.String(), hostname
 }

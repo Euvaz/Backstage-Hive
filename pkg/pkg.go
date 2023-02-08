@@ -9,7 +9,7 @@ import (
     "github.com/Euvaz/Backstage-Hive/logger"
 )
 
-func parseHost(host string) (string, string) {
+func ParseHost(host string) (string, string) {
     // Check if host is an IP address
     address, err := netip.ParseAddr(host)
     if err != nil {
