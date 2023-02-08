@@ -112,7 +112,7 @@ func main() {
             }
             defer rows.Close()
 
-            f := "%-15s %-6s %-13s, %s\n"
+            f := "%-15s %-6s %-13s %s\n"
             fmt.Printf(f, "ADDRESS", "PORT", "NAME", "HOSTNAME")
 
             var address string
