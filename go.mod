@@ -8,9 +8,9 @@ replace (
 )
 
 require (
-	github.com/Euvaz/Backstage-Hive/logger v0.0.0-20230208214835-2f90fe2ac9bf
+	github.com/Euvaz/Backstage-Hive/logger v0.0.0-20230208220350-87758b5ac4fa
 	github.com/Euvaz/Backstage-Hive/models v0.0.0-20230208021021-242510932d0b
-	github.com/Euvaz/Backstage-Hive/pkg v0.0.0-20230208214835-2f90fe2ac9bf
+	github.com/Euvaz/Backstage-Hive/pkg v0.0.0-20230208220350-87758b5ac4fa
 	github.com/gin-gonic/gin v1.8.2
 	github.com/jackc/pgx/v5 v5.2.0
 	github.com/spf13/cobra v1.6.1
