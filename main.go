@@ -2,17 +2,17 @@ package main
 
 import (
     "crypto/rand"
-	"database/sql"
+    "database/sql"
     "encoding/base64"
     "encoding/json"
-	"fmt"
+    "fmt"
 
     "github.com/Euvaz/Backstage-Hive/logger"
     "github.com/Euvaz/Backstage-Hive/models"
-	"github.com/gin-gonic/gin"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+    "github.com/gin-gonic/gin"
+    _ "github.com/jackc/pgx/v5/stdlib"
+    "github.com/spf13/cobra"
+    "github.com/spf13/viper"
 )
 
 func main() {
