@@ -20,7 +20,6 @@ func registerRoutes (router *gin.Engine, db *sql.DB) {
     router.POST("/drones/:name", func(ctx *gin.Context) {
         logger.Info("Handling POST /drones")
         name := ctx.Param("name")
-        //logger.Info(name)
 
         jsonData, err := ioutil.ReadAll(ctx.Request.Body)
         if err != nil {
@@ -41,10 +40,15 @@ func registerRoutes (router *gin.Engine, db *sql.DB) {
             _, err := db.Exec(`INSERT INTO drones (id, address, port, name)
                                VALUES (DEFAULT, $1, $2, $3)`, token.Addr, token.Port, name)
             if err != nil {
-                logger.Fatal(err.Error())
+                logger.Error(err.Error())
+                ctx.AbortWithStatus(500)
+                return
             }
             logger.Info(fmt.Sprintf(`Drone "%s" Enrolled`, name))
         } else {
+            logger.Warn(err.Error())
+            ctx.AbortWithStatus(401)
+            return
         }
     })
 }
