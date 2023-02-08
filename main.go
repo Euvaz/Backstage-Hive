@@ -48,7 +48,17 @@ func main() {
 
             router := gin.Default()
             registerRoutes(router, db)
-            router.Run(fmt.Sprintf("%s:%d", viper.GetString("host"), viper.GetInt("port")))
+            addr, _ := pkg.ParseHost(viper.GetString("host"))
+            port := viper.GetInt("port")
+            // Attempt running on IPv4/Hostname
+            err := router.Run(fmt.Sprintf("%s:%d", addr, port))
+            if err != nil {
+                // Attempt running on IPv6
+                err := router.Run(fmt.Sprintf("[%s]:%d", addr, port))
+                if err != nil {
+                    logger.Fatal(err.Error())
+                }
+            }
 		},
 	}
 
@@ -68,7 +78,7 @@ func main() {
         Run: func(cmd *cobra.Command, args []string) {
             logger.Debug("Creating token...")
             key  := RandStringBytes(50)
-            address, hostname := parseHost(viper.GetString("host"))
+            address, hostname := pkg.ParseHost(viper.GetString("host"))
             tokenBytes, err := json.Marshal(models.Token{Addr: address, Port: viper.GetInt("port"), Host: hostname, Key: key})
             enrollmentToken := base64.StdEncoding.EncodeToString(tokenBytes)
 
